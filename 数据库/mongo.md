@@ -4,14 +4,14 @@
 
 > 配置文件
 
-```mongoConfig
+```text
 replication:  
   replSetName: rs1  
 ```
 
 > 数据库
 
-```mongo
+```js
 cfg = {
     _id: "rs1",
     members: [{
@@ -30,7 +30,7 @@ rs.status()
 
 [mongo角色](https://docs.mongodb.com/manual/reference/built-in-roles/index.html)
 
-```mongo
+```js
 db.createUser(
     {
       user:"test",
@@ -39,4 +39,14 @@ db.createUser(
       mechanisms : ["SCRAM-SHA-1"]
     }
  )
+```
+
+## 获取所有索引
+```js
+var allIndex = [];
+db.getCollectionNames().forEach(function (collection) {
+    var indexes = db.getCollection(collection).getIndexes();
+    allIndex = allIndex.concat(indexes);
+});
+printjson(allIndex);
 ```
