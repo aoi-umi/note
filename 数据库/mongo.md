@@ -48,5 +48,19 @@ db.getCollectionNames().forEach(function (collection) {
     var indexes = db.getCollection(collection).getIndexes();
     allIndex = allIndex.concat(indexes);
 });
-printjson(allIndex);
+print(allIndex);
+var script = [];
+allIndex.forEach(ele => {
+    let name = ele.ns.replace(ele.ns.split('.')[0] + '.', '');
+    let opt = {};
+    if (ele.unique) {
+        opt.unique = ele.unique;
+    }
+    let index = JSON.stringify(ele.key).replace(/"/g, "'");
+    if (index == "{'_id':1}")
+        return;
+    script.push("db.getCollection('" + name + "').createIndex(" + index + "," + JSON.stringify(opt).replace(/"/g, "'") + ");");
+});
+
+script.forEach(s => print(s));
 ```
