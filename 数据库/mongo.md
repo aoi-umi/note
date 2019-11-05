@@ -64,3 +64,12 @@ allIndex.forEach(ele => {
 
 script.forEach(s => print(s));
 ```
+
+## 数据库备份
+```
+mongodump -h localhost -u `user` -d `db` -o `path` -p `pwd`
+```
+## 数据库导入
+```
+mongorestore -h localhost -u `user` -d `db` --dir `path` -p `pwd` --drop
+```
