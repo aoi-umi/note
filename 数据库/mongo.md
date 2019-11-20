@@ -27,7 +27,7 @@ rs.initiate(cfg);
 
 //重新配置
 var cfg = rs.conf();
-cfg.members[0].name = ""; //修改项
+cfg.members[0].host = ""; //修改项
 rs.reconfig(
   cfg
   // { force: true }
