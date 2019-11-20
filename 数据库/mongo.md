@@ -25,8 +25,13 @@ var cfg = {
 };
 rs.initiate(cfg);
 
-//强制重新配置
-rs.reconfig(cfg, { force: true });
+//重新配置
+var cfg = rs.conf();
+cfg.members[0].name = ""; //修改项
+rs.reconfig(
+  cfg
+  // { force: true }
+);
 
 //检查配置是否成功
 rs.status();
