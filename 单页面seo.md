@@ -33,8 +33,8 @@ options = Options()
 options.add_argument('-headless')
 options.add_argument('--disable-gpu')
 driver = webdriver.Firefox(options=options)
-def get():
-    url = "http://localhost/article"
+def get(req):
+    url = "http://localhost" + req.path
     driver.get(url)
     driver.implicitly_wait(30)
     sleep(5)
@@ -50,7 +50,7 @@ class Resquest(BaseHTTPRequestHandler):
         self.send_response(200)
         # self.send_header('Content-type', 'application/json')
         self.end_headers()
-        data = get()
+        data = get(self)
         self.wfile.write(data.encode())
 
 
