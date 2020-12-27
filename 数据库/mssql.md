@@ -9,22 +9,62 @@ select @xml
 ```
 
 读取xml
-```sql
-declare @Pointer INT, @XML varchar(100);
+
+``` sql
+declare @Pointer INT, @XML xml;
 
 -- 格式1
-set @xml = '<doc data="test"></doc>'
+set @xml = '<xml data="test"><data2>1</data2></xml>'
 EXECUTE sp_xml_preparedocument @Pointer OUTPUT,@XML;
 
-select * FROM OPENXML(@Pointer, '/doc',1) 
-with(data varchar(100))
+select * FROM OPENXML(@Pointer, '/xml',1) 
+with(
+	data varchar(100),
+	data2 int 'data2'
+)
 
 -- 格式2
-set @xml = '<doc><data>test</data></doc>'
+set @xml = '<xml><data>test</data><data2><child>1</child></data2></xml>'
 EXECUTE sp_xml_preparedocument @Pointer OUTPUT,@XML;
 
-select * FROM OPENXML(@Pointer, '/doc',2) 
-with(data varchar(100))
+select * FROM OPENXML(@Pointer, '/xml',2) 
+with(
+	data varchar(100),
+	child int 'data2/child'
+)
+```
+
+动态解析xml
+
+``` sql
+
+declare @Pointer INT, @XML xml, @path varchar(200);
+set @path='xml'
+set @xml = '<xml><data>test</data><data2><child>1</child></data2></xml>'
+EXECUTE sp_xml_preparedocument @Pointer OUTPUT,@XML
+
+declare @sql varchar(max)
+set @sql = ''
+
+select @sql +=  '@xml.value(''(' + @path + '/' + name + ')[1]'', ''varchar(max)'') ' + localname + ','+ CHAR(13) from (
+select  (
+case nodetype 
+	when 1 then '' + localname 
+	when 2 then '@' + localname 
+	else '' 
+end) name, localname FROM OPENXML(@Pointer, @path) where parentid = 0
+) t
+
+--select * FROM OPENXML(@Pointer, @path) where parentid = 0
+set @sql = concat_ws(CHAR(13),
+'declare @xml xml, @path varchar(200);',
+' set @path =''' + @path + ''';',
+' set @xml =''' + cast(@xml as varchar(max)) + ''';',
+' select ' + @sql + (case @sql when '' then '1' else '0' end) + ' as _noData' 
+)
+print @sql
+
+exec (@sql)
 ```
 
 获取插入的自增id
@@ -57,12 +97,15 @@ from sys.dm_tran_locks where resource_type='OBJECT'
 查询存储过程
 ```sql 
 select t.name, c.encrypted, c.text from (
+
 	select distinct id, object_name(id) as name from syscomments where id in (
 		select object_id from sys.objects where type='P'
 	)
+
 ) t
 left join sys.syscomments c on c.id = t.id
 where 1=1
+
 ``` 
 
 查看表结构
@@ -74,6 +117,7 @@ LEFT JOIN (SELECT tc.table_schema, tc.table_name,  cu.column_name, tc.constraint
 ```
 
 查看存储过程
-```sql
+
+``` sql
 sp_helptext '存储过程名'
 ```
