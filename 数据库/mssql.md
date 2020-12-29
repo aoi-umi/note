@@ -43,8 +43,10 @@ set @path='xml'
 set @xml = '<xml><data>test</data><data2><child>1</child></data2></xml>'
 EXECUTE sp_xml_preparedocument @Pointer OUTPUT,@XML
 
-declare @sql varchar(max)
+declare @sql varchar(max), @minId int
 set @sql = ''
+
+select @minId = min(id) FROM OPENXML(@Pointer, @path)
 
 select @sql +=  '@xml.value(''(' + @path + '/' + name + ')[1]'', ''varchar(max)'') ' + localname + ','+ CHAR(13) from (
 select  (
@@ -52,7 +54,7 @@ case nodetype
 	when 1 then '' + localname 
 	when 2 then '@' + localname 
 	else '' 
-end) name, localname FROM OPENXML(@Pointer, @path) where parentid = 0
+end) name, localname FROM OPENXML(@Pointer, @path) where parentid = @minId
 ) t
 
 --select * FROM OPENXML(@Pointer, @path) where parentid = 0
