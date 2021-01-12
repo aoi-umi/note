@@ -92,8 +92,36 @@ select SCOPE_IDENTITY() as id
 查看锁表
 
 ``` sql
-select request_session_id spid, OBJECT_NAME(resource_associated_entity_id) tableName   
-from sys.dm_tran_locks where resource_type='OBJECT'
+select 
+标志,
+进程ID=spid, -- 线程ID=kpid,块进程ID=blocked,
+-- 数据库ID=dbid,
+数据库名=db_name(dbid),
+-- 用户ID=uid,用户名=loginame,累计CPU时间=cpu,
+-- 登陆时间=login_time,打开事务数=open_tran, 进程状态=status,
+工作站名=hostname,
+-- 工作站进程ID=hostprocess,
+应用程序名=program_name,
+域名=nt_domain,
+网卡地址=net_address,
+表名=OBJECT_NAME(resource_associated_entity_id)  
+from (
+	select 标志='阻塞的进程',
+	spid,kpid,a.blocked,dbid,uid,loginame,cpu,login_time,open_tran,
+	status,hostname,program_name,hostprocess,nt_domain,net_address,
+	s1=a.spid,s2=0
+	from master..sysprocesses a join (
+		select blocked from master..sysprocesses group by blocked
+	)b on a.spid=b.blocked where a.blocked=0
+	union all
+	select '|_牺牲品_>',
+	spid,kpid,blocked,dbid,uid,loginame,cpu,login_time,open_tran,
+	status,hostname,program_name,hostprocess,nt_domain,net_address,
+	s1=blocked,s2=1
+	from master..sysprocesses a where blocked<>0
+)a 
+join sys.dm_tran_locks c on a.spid = c.request_session_id and  c.resource_type='OBJECT'
+order by s1,s2
 ```
 
 查询存储过程
