@@ -127,11 +127,9 @@ order by s1,s2
 查询存储过程
 ```sql 
 select t.name, c.encrypted, c.text from (
-
 	select distinct id, object_name(id) as name from syscomments where id in (
 		select object_id from sys.objects where type='P'
 	)
-
 ) t
 left join sys.syscomments c on c.id = t.id
 where 1=1
@@ -142,6 +140,24 @@ where 1=1
 
 ``` sql
 sp_helptext '存储过程名'
+```
+
+查看结构
+
+```sql
+select 
+	object_id, 
+	name as 名称,
+	(case type
+	when 'p' then '存储过程'
+	when 'u' then '用户表'
+	else cast(type as nvarchar)
+	end) 类型,
+	modify_date 修改时间
+	
+from sys.objects 
+-- where type='P' 
+order by modify_date desc
 ```
 
 查看表结构
@@ -170,3 +186,12 @@ select @var1, @var2
 |10|2|
 |结果2|-|
 |1|2|
+
+分组计数
+
+``` sql
+select * from (
+	select ROW_NUMBER() over(partition by col1 order by id asc) c, *
+	from table1 
+) t where t.c > 1
+```
