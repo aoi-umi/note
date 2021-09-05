@@ -34,6 +34,20 @@ with(
 )
 ```
 
+xml查询
+```sql
+declare @Pointer INT, @XML xml;
+
+set @xml = '<xml data="test"><data2>1</data2><data2>2</data2></xml>'
+
+select 
+@xml.query('data(/xml/@data)') data,
+@xml.query('/xml/data2') data2,
+@xml.query('data(/xml/data2)[1]') data2Val,
+@xml.value('data(/xml/@data)[1]', 'varchar(50)') v_data,
+@xml.value('data(/xml/data2)[1]', 'int') v_data2Val	
+```
+
 动态解析xml
 
 ``` sql
