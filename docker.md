@@ -43,6 +43,10 @@ docker run
   -v /data:/data \
   imageName
 ```
+修改
+```sh
+docker update --restart=no <container-id>
+```
 
 * 查看容器
 
